@@ -53,7 +53,7 @@ void potion(int* curMana) {
 }
 
 void history() {
-    printf(PURPLE"📜 ~~~ "RESET"Chronicle of Past Incantations"PURPLE" ~~~ 📜\n"RESET);
+    printf(PURPLE"📜 ~~~ "YELLOW"Chronicle of Past Incantations"PURPLE" ~~~ 📜\n"RESET);
 
     for (int i = 1; i <= history_length; i++) {
         HIST_ENTRY *entry = history_get(i);
@@ -65,4 +65,32 @@ void history() {
     }
 
     printf(PURPLE"   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"RESET);
+}
+
+void help() {
+    printf(PURPLE "📜 ~~~ " YELLOW "Enchanted Tome of Guidance" PURPLE " ~~~ 📜\n\n" RESET);
+
+    printf("🧙 " GREEN "Commands and Arcane Rituals:\n\n" RESET);
+
+    printf(YELLOW "Teleport (cd) 🚪\n" RESET);
+    printf(CYAN "   - Use this incantation to traverse through magical portals to different realms (directories).\n\n");
+
+    printf(YELLOW "Chronicle of Past Incantations (History) 📜\n" RESET);
+    printf(CYAN "   - Recount tales (commands) of old. Relive your journey through this mystical realm.\n\n");
+    
+    printf(YELLOW "pwd 🧭\n" RESET);
+    printf(CYAN "   - Summon this spell to reveal your current location within the vast labyrinth of realms.\n\n");
+
+    printf(YELLOW "echo 🗣️\n" RESET);
+    printf(CYAN "   - Channel your inner bard! Proclaim words and let them echo through the land.\n\n");
+
+    printf(YELLOW "exit 🌀\n" RESET);
+    printf(CYAN "   - Utter this spell when you wish to leave the mystical shell and return to the mundane world.\n\n");
+
+    printf(BLUE "🔮 " GREEN "Sage Advice:\n\n" RESET);
+    printf("1. Spells and incantations are potent; wield them with wisdom and care.\n");
+    printf("2. The realms (directories) are vast; always use the 🧭 to know your standing.\n");
+    printf("3. In times of uncertainty, the 'help' incantation is but a whisper away.\n");
+
+    printf(PURPLE "\n   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" RESET);
 }

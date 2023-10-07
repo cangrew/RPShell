@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <signal.h>
 
 #include "resources.h"
 
@@ -44,6 +45,8 @@ cmd* tokenize();
 int execute(cmd* command);
 int external_exec(cmd* command);
 void executeWait();
+void handle_sigint(int sig, siginfo_t *si, void *unused);
+void setup_sigint_handler();
 
 char* colorize(char* str, const char* color_code);
 void print_error(char* cmd);
@@ -61,6 +64,8 @@ int main(){
   gethostname(hostname, 1024);
   cwd = getcwd(NULL, 0);
   read_history("resources/history");
+  setup_sigint_handler();
+
 
   while(1) {
     read_cmd();
@@ -133,6 +138,9 @@ int execute(cmd* command) {
   }
   else if(strcmp(command->cmd, "exit") == 0){
       exit(0);
+  }
+  else if(strcmp(command->cmd, "help") == 0){
+      help();
   }
   else if(strcmp(command->cmd, "cd") == 0){
       curMana -= 10;
@@ -208,7 +216,7 @@ void print_error(char* cmd){
   char* error_prefix = colorize("🌌✨ Eldritch Error ✨🌌:", PURPLE);
   char* error_content = colorize("Alas, young adventurer!", RED);
   char* error_command = colorize(cmd, GREEN);
-  char* error_suffix = colorize("the ancient scrolls", YELLOW);
+  char* error_suffix = colorize("the Enchanted Tome of Guidance", YELLOW);
   
   printf(PURPLE);
   printf("\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀\n");
@@ -250,37 +258,38 @@ char* colorize(char* str, const char* color_code) {
 }
 
 void executeWait() {
-    printf("Loading ");
-    fflush(stdout);  // Flush the buffer to display text immediately
+  printf("Loading ");
+  fflush(stdout);  // Flush the buffer to display text immediately
 
-    // Display loading bar for 2 seconds
-    for (int i = 0; i < 20; i++) {
-        putchar('#');
-        fflush(stdout);  // Flush the buffer to display '#' immediately
-        usleep(100000);  // Sleep for 100ms
-    }
-    putchar('\n');
+  // Display loading bar for 2 seconds
+  for (int i = 0; i < 20; i++) {
+      putchar('#');
+      fflush(stdout);  // Flush the buffer to display '#' immediately
+      usleep(100000);  // Sleep for 100ms
+  }
+  putchar('\n');
 }
 
 
-void handle_sigint(int sig, siginfo_t *si, void *unused) {
-    printf("\nCtrl+C was pressed, but I'm not closing!\n");
-    fflush(stdout); // Make sure the message is immediately printed
+void handle_sigint(int sig __attribute__((unused)), siginfo_t *si __attribute__((unused)), void *unused __attribute__((unused))) {
+  //printf("\n🔮 "YELLOW"Ctrl+C?"RED" Oops! You just turned your coffee into a squirrel."RESET" Next time, just say "YELLOW"exit!"RESET" 🐿️☕\n");
+  printf(DARK_PURPLE "🌌 Ah, "PURPLE"Ctrl+C"DARK_PURPLE"! A mere mortal's plea to the abyss. But the void is vast and indifferent. Whisper "YELLOW"exit"DARK_PURPLE" to find your way back to reality, lest you remain trapped in this liminal space forever... 🌑\n"RESET);
+  fflush(stdout); // Make sure the message is immediately printed
+  rl_forced_update_display();
 }
 
 
 void setup_sigint_handler() {
-    struct sigaction sa;
+  struct sigaction sa;
 
-    // Clear the sa structure
-    memset(&sa, 0, sizeof(sa));
+  memset(&sa, 0, sizeof(sa));
 
-    sa.sa_sigaction = handle_sigint;
-    sa.sa_flags = SA_SIGINFO;
+  sa.sa_sigaction = handle_sigint;
+  sa.sa_flags = SA_SIGINFO;
 
-    // Setup the signal handler for SIGINT
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(1); // Exit if we can't set the handler
-    }
+  // Setup the signal handler for SIGINT
+  if (sigaction(SIGINT, &sa, NULL) == -1) {
+    perror("sigaction");
+    exit(EXIT_FAILURE); // Exit if we can't set the handler
+  }
 }
