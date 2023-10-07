@@ -143,6 +143,8 @@ int execute(cmd* command) {
       help();
   }
   else if(strcmp(command->cmd, "cd") == 0){
+      char* path = command->args[1];
+      cd(path);
       curMana -= 10;
   }
   else if(strcmp(command->cmd, "history") == 0){
