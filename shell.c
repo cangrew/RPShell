@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <libgen.h>
+#include <sys/wait.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -27,7 +28,7 @@ typedef struct cmd {
 } cmd;
 
 char* buffer;
-char prompt[MAX_CMD_SIZE];
+char prompt[512];
 size_t len;
 const char delim[] = " \n";
 
@@ -44,7 +45,7 @@ void gen_prompt();
 void read_cmd();
 cmd* tokenize();
 int execute(cmd* command);
-enum cmd_names find_token(char* token);
+int external_exec(cmd* command);
 
 int main(){
   user = getlogin();
@@ -71,34 +72,35 @@ void read_cmd(){
 
 void gen_prompt(){
   char* dir_name = basename(cwd);
-  sprintf(prompt,"< %sHP %d/%d%s | %sMana %d/%d%s > %s%s@%s%s [%s] $ ",RED,curHP,maxHP,RESET,BLUE,curMana,maxMana,RESET,GREEN,user,hostname,RESET,dir_name);
+  sprintf(prompt,"<%sHP✨ %d/%d%s | %sMana🌙 %d/%d%s> %s%s@%s%s [%s] $ ",RED,curHP,maxHP,RESET,BLUE,curMana,maxMana,RESET,GREEN,user,hostname,RESET,dir_name);
 }
 
 cmd* tokenize(){
+  int i = 1;
   cmd* new_cmd = malloc(sizeof(cmd));
-    if (!new_cmd) {
-        return NULL;
-    }
+  new_cmd->args = malloc(sizeof(char*) * MAX_ARG_SIZE);
 
-    new_cmd->cmd = strtok(buffer, delim);
-    if (!new_cmd->cmd) {
-        free(new_cmd->cmd);
-        return NULL;
-    }
+  if (!new_cmd) {
+      return NULL;
+  }
+  if (!new_cmd->args) {
+      free(new_cmd);
+      return NULL;
+  }
 
-    new_cmd->args = malloc(sizeof(char*) * MAX_ARG_SIZE);
-    if (!new_cmd->args) {
-        free(new_cmd);
-        return NULL;
-    }
+  new_cmd->cmd = strtok(buffer, delim);
+  new_cmd->args[0] = new_cmd->cmd;
+  if (!new_cmd->cmd) {
+      free(new_cmd->cmd);
+      return NULL;
+  }
 
-    int i = 0;
-    while (i < MAX_ARG_SIZE && (new_cmd->args[i] = strtok(NULL, delim)) != NULL) {
-        i++;
-    }
+  while (i < MAX_ARG_SIZE && (new_cmd->args[i] = strtok(NULL, delim)) != NULL) {
+      i++;
+  }
 
-    new_cmd->argc = i;
-    return new_cmd;
+  new_cmd->argc = i;
+  return new_cmd;
 }
 
 int execute(cmd* command) {
@@ -107,6 +109,9 @@ int execute(cmd* command) {
   }
   if(strcmp(command->cmd, "exit") == 0){
       exit(0);
+  }
+  else if(strcmp(command->cmd, "potion") == 0){
+
   }
   else if(strcmp(command->cmd, "cd") == 0){
 
@@ -118,9 +123,26 @@ int execute(cmd* command) {
     
   }
   else{
-    // TODO: execute program
+    external_exec(command);
   }
   return 0;
 }
 
+int external_exec(cmd* command){
+  pid_t pid = fork();
 
+  if (pid < 0) {
+      perror("Failed forking child");
+      return 1;
+  } else if (pid == 0) {
+      // We are in the child process
+      char *argv[] = {command, NULL};  // Create argument list
+      if (execvp(command->cmd, command->args) < 0) {
+          perror(command);
+      }
+      exit(0);  // Exit the child process
+  } else {
+      // We are in the parent process
+      wait(NULL);  // Wait for the child to exit
+  }
+}
