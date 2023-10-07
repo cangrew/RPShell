@@ -46,6 +46,7 @@ void read_cmd();
 cmd* tokenize();
 int execute(cmd* command);
 int external_exec(cmd* command);
+void print_dragon();
 
 int main(){
   user = getlogin();
@@ -60,6 +61,7 @@ int main(){
     // }
     // printf("%s",cur_cmd->cmd);
     execute(cur_cmd);
+    print_dragon();
   }
   return 0;
 }
@@ -104,6 +106,10 @@ cmd* tokenize(){
 }
 
 int execute(cmd* command) {
+  if (curMana <= 0) {
+      printf("You don't have enough mana.\n");
+      return 0;
+  }
   if(!command){
     // TODO: Handle Failed.
   }
@@ -111,19 +117,29 @@ int execute(cmd* command) {
       exit(0);
   }
   else if(strcmp(command->cmd, "potion") == 0){
-
+      printf("Drinking potion...\n");
+      if (curMana + 20 > 100) {
+          curMana = 100;
+      }
+      else {
+          curMana += 20;
+      }
   }
   else if(strcmp(command->cmd, "cd") == 0){
-
+      curMana -= 10;
   }
   else if(strcmp(command->cmd, "history") == 0){
-    
+      curMana -= 20;
   }
   else if(strcmp(command->cmd, "echo") == 0){
-    
+      curMana -= 5;
+  }
+  else if(strcmp(command->cmd, "quest") == 0){
+      curMana -= 5;
   }
   else{
     external_exec(command);
+      curMana -= 10;
   }
   return 0;
 }
@@ -145,4 +161,20 @@ int external_exec(cmd* command){
       // We are in the parent process
       wait(NULL);  // Wait for the child to exit
   }
+}
+
+void print_dragon() {
+    printf("        ,     \\    /      ,        \n");
+    printf("       / \\    )\\__/(     / \\       \n");
+    printf("      /   \\  (_\\  /_)   /   \\      \n");
+    printf(" ____/_____\\__\\@  @/___/_____\\____ \n");
+    printf("|             |\\../|              |\n");
+    printf("|              \\VV/               |\n");
+    printf("|        ----------------         |\n");
+    printf("|_________________________________|\n");
+    printf(" |    /\\ /      \\\\       \\ /\\    | \n");
+    printf(" |  /   V        ))       V   \\  | \n");
+    printf(" |/     `       //        '     \\| \n");
+    printf(" `              V                '\n");
+    printf("\n(https://www.asciiart.eu/mythology/dragons)\n");
 }
