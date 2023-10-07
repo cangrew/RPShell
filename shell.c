@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <libgen.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #define MAX_CMD_SIZE 256
 #define MAX_ARG_SIZE 25
@@ -25,6 +27,7 @@ typedef struct cmd {
 } cmd;
 
 char* buffer;
+char prompt[MAX_CMD_SIZE];
 size_t len;
 const char delim[] = " \n";
 
@@ -37,7 +40,7 @@ char* user;
 char hostname[1024];
 char* cwd;
 
-void print_prompt();
+void gen_prompt();
 void read_cmd();
 cmd* tokenize();
 int execute(cmd* command);
@@ -47,7 +50,6 @@ int main(){
   user = getlogin();
   gethostname(hostname, 1024);
   cwd = getcwd(NULL, 0);
-  print_prompt();
 
   while(1) {
     read_cmd();
@@ -55,22 +57,21 @@ int main(){
     // for(int i = 0; i < cur_cmd->argc; i++){
     //   printf("%d %s\n",i,cur_cmd->args[i]);
     // }
-    printf("%s",cur_cmd->cmd);
+    // printf("%s",cur_cmd->cmd);
     execute(cur_cmd);
-    print_prompt();
   }
   return 0;
 }
 
 void read_cmd(){
-  getline(&buffer, &len, stdin);
+  gen_prompt();
+  buffer = readline(prompt);
+  // getline(&buffer, &len, stdin);
 }
 
-void print_prompt(){
-  printf("< %sHP %d/%d%s | %sMana %d/%d%s >",RED,curHP,maxHP,RESET,BLUE,curMana,maxMana,RESET);
-  printf(" %s%s@%s%s",GREEN,user,hostname, RESET);
+void gen_prompt(){
   char* dir_name = basename(cwd);
-  printf(" [%s] $", dir_name);
+  sprintf(prompt,"< %sHP %d/%d%s | %sMana %d/%d%s > %s%s@%s%s [%s] $ ",RED,curHP,maxHP,RESET,BLUE,curMana,maxMana,RESET,GREEN,user,hostname,RESET,dir_name);
 }
 
 cmd* tokenize(){
@@ -102,7 +103,7 @@ cmd* tokenize(){
 
 int execute(cmd* command) {
   if(!command){
-    // Handle Failed.
+    // TODO: Handle Failed.
   }
   if(strcmp(command->cmd, "exit") == 0){
       exit(0);
@@ -116,5 +117,10 @@ int execute(cmd* command) {
   else if(strcmp(command->cmd, "echo") == 0){
     
   }
+  else{
+    // TODO: execute program
+  }
   return 0;
 }
+
+
