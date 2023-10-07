@@ -3,7 +3,8 @@
 
 int cd(char* path);
 int echo(char* args);
-int history();
+void history();
+void potion(int* curMana);
 int get_dragon_health(void);
 void print_dragon(void);
 

@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <readline/history.h>
+
+#include "resources.h"
 
 int get_dragon_health() {
     int total_health = 1;
@@ -37,4 +40,29 @@ void print_dragon() {
     printf(" `              V                '\n");
     printf("\n(https://www.asciiart.eu/mythology/dragons)\n\n");
     printf("A dragon is attacking! Find its weak spots and cast fireballs at them\n");
+}
+
+void potion(int* curMana) {
+    printf("Drinking potion...\n");
+    if (*curMana + 20 > 100) {
+        *curMana = 100;
+    }
+    else {
+        *curMana += 20;
+    }
+}
+
+void history() {
+    printf(PURPLE"📜 ~~~ "RESET"Chronicle of Past Incantations"PURPLE" ~~~ 📜\n"RESET);
+
+    for (int i = 1; i <= history_length; i++) {
+        HIST_ENTRY *entry = history_get(i);
+        if (entry && entry->line) {
+            // Determine the prefix emoji for each command (for simplicity, using the wizard emoji for all commands)
+            printf(BLUE"🧙 "YELLOW"Verse %d:\n"RESET, i);
+            printf(GREEN"   > %s\n"RESET, entry->line);
+        }
+    }
+
+    printf(PURPLE"   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"RESET);
 }

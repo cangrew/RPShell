@@ -1,3 +1,4 @@
+#include "builtin.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,18 +12,11 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "resources.h"
+
 #define MAX_CMD_SIZE 256
 #define MAX_ARG_SIZE 25
 #define MAX_ARG_LEN  100
-
-#define RED "\033[31m"
-#define BLUE "\033[34m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[0;33m"
-#define PURPLE "\033[0;35m"
-#define RESET "\033[0m"
-
-
 
 typedef struct cmd {
   char* cmd;
@@ -49,6 +43,7 @@ void read_cmd();
 cmd* tokenize();
 int execute(cmd* command);
 int external_exec(cmd* command);
+void executeWait();
 
 char* colorize(char* str, const char* color_code);
 void print_error(char* cmd);
@@ -65,15 +60,18 @@ int main(){
   user = getlogin();
   gethostname(hostname, 1024);
   cwd = getcwd(NULL, 0);
+  read_history("resources/history");
 
   while(1) {
     read_cmd();
+    add_history(buffer);
     cmd* cur_cmd = tokenize();
     // for(int i = 0; i < cur_cmd->argc; i++){
     //   printf("%d %s\n",i,cur_cmd->args[i]);
     // }
     // printf("%s",cur_cmd->cmd);
     execute(cur_cmd);
+    write_history("resources/history");
   }
   return 0;
 }
@@ -86,7 +84,7 @@ void read_cmd(){
 
 void gen_prompt(){
   char* dir_name = basename(cwd);
-  sprintf(prompt,"<%sHP✨ %d/%d%s | %sMana🌙 %d/%d%s> %s%s@%s%s [%s] $ ",RED,curHP,maxHP,RESET,BLUE,curMana,maxMana,RESET,GREEN,user,hostname,RESET,dir_name);
+  sprintf(prompt,"<"RED"HP✨ %d/%d"RESET" | "BLUE"Mana🌙 %d/%d"RESET"> "GREEN"%s@%s"RESET" [%s] $ ",curHP,maxHP,curMana,maxMana,user,hostname,dir_name);
 }
 
 cmd* tokenize(){
@@ -96,7 +94,7 @@ cmd* tokenize(){
   int tokenPos = 0;
   int inQuotes = 0;
   new_cmd->args[tokenCount]= malloc(sizeof(char)*MAX_ARG_LEN);
-  for (int i = 0; i < strlen(buffer); i++) {
+  for (size_t i = 0; i < strlen(buffer); i++) {
     if (buffer[i] == '"' && !inQuotes) {
         inQuotes = 1;
         continue;
@@ -123,33 +121,32 @@ cmd* tokenize(){
 }
 
 int execute(cmd* command) {
-  if (curMana <= 0) {
-      printf("You don't have enough mana.\n");
-      return 0;
-  }
   if(!command){
     // TODO: Handle Failed.
   }
-  if(strcmp(command->cmd, "exit") == 0){
-      exit(0);
+  if(strcmp(command->cmd, "potion") == 0){
+      potion(&curMana);
   }
-  else if(strcmp(command->cmd, "potion") == 0){
-      printf("Drinking potion...\n");
-      if (curMana + 20 > 100) {
-          curMana = 100;
-      }
-      else {
-          curMana += 20;
-      }
+  else if (curMana <= 0) {
+      printf("You don't have enough mana.\n");
+      return 0;
+  }
+  else if(strcmp(command->cmd, "exit") == 0){
+      exit(0);
   }
   else if(strcmp(command->cmd, "cd") == 0){
       curMana -= 10;
   }
   else if(strcmp(command->cmd, "history") == 0){
       curMana -= 20;
+      history();
   }
   else if(strcmp(command->cmd, "echo") == 0){
       curMana -= 5;
+  }
+  else if(strcmp(command->cmd, "wait") == 0){
+      curMana -= 5;
+      executeWait();
   }
   else if(strcmp(command->cmd, "quest") == 0){
       print_dragon();
@@ -167,6 +164,15 @@ int execute(cmd* command) {
 }
 
 int external_exec(cmd* command){
+  int fd[2];
+  char buf[256];
+  memset(buf, 0, sizeof(buf));
+
+  if (pipe(fd) == -1) {
+      perror("pipe");
+      return 1;
+  }
+
   pid_t pid = fork();
 
   if (pid < 0) {
@@ -174,17 +180,27 @@ int external_exec(cmd* command){
       return 1;
   } else if (pid == 0) {
       // We are in the child process
+      close(fd[0]); // Close the read end of the pipe
+
       if (execvp(command->cmd, command->args) < 0) {
-          print_error(command->cmd);
-          //perror(command->cmd);
+          snprintf(buf, sizeof(buf), "%s", command->cmd);
+          write(fd[1], buf, strlen(buf)); // Notify the parent of the error
+          exit(EXIT_FAILURE);
       }
-      exit(0);  // Exit the child process
+      exit(EXIT_SUCCESS);  // Exit the child process
   } else {
       // We are in the parent process
-      wait(NULL);  // Wait for the child to exit
+      close(fd[1]); // Close the write end of the pipe
+      wait(NULL);   // Wait for the child to exit
+      
+      if (read(fd[0], buf, sizeof(buf)) > 0) {
+          print_error(buf);
+          curHP -= 10;
+          return 1;
+      }
   }
+  return 0;
 }
-
 
 // Utils
 
@@ -194,9 +210,8 @@ void print_error(char* cmd){
   char* error_command = colorize(cmd, GREEN);
   char* error_suffix = colorize("the ancient scrolls", YELLOW);
   
-  printf("%s\n%s The spell %s is unknown in this realm. Seek %s or try another incantation.📜🔮\n\n", error_prefix, error_content, error_command, error_suffix);
   printf(PURPLE);
-  printf("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+  printf("\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀\n");
   printf("⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣿⣿⠿⠿⠿⠿⢿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣿⣿⠿⠿⠿⠿⢿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣿⣿⠿⠿⠿⠿⢿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣿⣿⠿⠿⠿⠿⢿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀\n");
   printf("⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⠟⠉⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⠟⠉⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⠟⠉⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⠟⠉⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⣧⠀⠀⠀⠀⠀\n");
   printf("⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⠀⠀⠀⠀⠀\n");
@@ -212,6 +227,8 @@ void print_error(char* cmd){
   printf("⠀⠀⠀⠀⠀⠀⢀⣠⣶⣿⣿⣿⣿⡿⠿⠿⠶⠶⢶⣶⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣶⣿⣿⣿⣿⡿⠿⠿⠶⠶⢶⣶⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣶⣿⣿⣿⣿⡿⠿⠿⠶⠶⢶⣶⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣶⣿⣿⣿⣿⡿⠿⠿⠶⠶⢶⣶⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀\n");
   printf("⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
   printf(RESET);
+  printf("%s\n%s The spell %s is unknown in this realm. Seek %s or try another incantation.📜🔮\n\n", error_prefix, error_content, error_command, error_suffix);
+
   // Free allocated memory
   free(error_prefix);
   free(error_content);
@@ -230,4 +247,40 @@ char* colorize(char* str, const char* color_code) {
   sprintf(colored_str, "%s%s%s", color_code, str, RESET);
   
   return colored_str;
+}
+
+void executeWait() {
+    printf("Loading ");
+    fflush(stdout);  // Flush the buffer to display text immediately
+
+    // Display loading bar for 2 seconds
+    for (int i = 0; i < 20; i++) {
+        putchar('#');
+        fflush(stdout);  // Flush the buffer to display '#' immediately
+        usleep(100000);  // Sleep for 100ms
+    }
+    putchar('\n');
+}
+
+
+void handle_sigint(int sig, siginfo_t *si, void *unused) {
+    printf("\nCtrl+C was pressed, but I'm not closing!\n");
+    fflush(stdout); // Make sure the message is immediately printed
+}
+
+
+void setup_sigint_handler() {
+    struct sigaction sa;
+
+    // Clear the sa structure
+    memset(&sa, 0, sizeof(sa));
+
+    sa.sa_sigaction = handle_sigint;
+    sa.sa_flags = SA_SIGINFO;
+
+    // Setup the signal handler for SIGINT
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(1); // Exit if we can't set the handler
+    }
 }
