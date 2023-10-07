@@ -123,6 +123,10 @@ cmd* tokenize(){
 }
 
 int execute(cmd* command) {
+  if (curMana <= 0) {
+      printf("You don't have enough mana.\n");
+      return 0;
+  }
   if(!command){
     // TODO: Handle Failed.
   }
@@ -130,19 +134,34 @@ int execute(cmd* command) {
       exit(0);
   }
   else if(strcmp(command->cmd, "potion") == 0){
-    
+      printf("Drinking potion...\n");
+      if (curMana + 20 > 100) {
+          curMana = 100;
+      }
+      else {
+          curMana += 20;
+      }
   }
   else if(strcmp(command->cmd, "cd") == 0){
-
+      curMana -= 10;
   }
   else if(strcmp(command->cmd, "history") == 0){
-    
+      curMana -= 20;
   }
   else if(strcmp(command->cmd, "echo") == 0){
-    
+      curMana -= 5;
+  }
+  else if(strcmp(command->cmd, "quest") == 0){
+      print_dragon();
+      int dragon_health = get_dragon_health();
+      printf("current dragon health: %d\n", dragon_health);
+      if (dragon_health == 0) {
+          printf("dragon defeated :)\n");
+      }
   }
   else{
     external_exec(command);
+      curMana -= 10;
   }
   return 0;
 }
