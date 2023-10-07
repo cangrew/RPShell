@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <readline/history.h>
+#include <unistd.h>
 
 #include "resources.h"
 
@@ -65,4 +66,25 @@ void history() {
     }
 
     printf(PURPLE"   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"RESET);
+}
+
+int cd(char* path){
+    printf("Teleporting to...\n");
+    // go to user's home directory
+    if (path == NULL || (strcmp(path,"~") == 0)) {
+        const char *home_directory = getenv("HOME");
+        //printf(getenv("HOME"));
+
+        if(home_directory == NULL) {
+            printf("Can't find Home.\n");
+            return -1;
+        }
+        else if(chdir(home_directory) != 0) {
+            printf("Failed to cast Home spell.\n");
+            return -1;
+        }
+    printf("Back Home. 🏡\n");
+    return 0;
+    }
+
 }

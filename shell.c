@@ -135,6 +135,8 @@ int execute(cmd* command) {
       exit(0);
   }
   else if(strcmp(command->cmd, "cd") == 0){
+      char* path = command->args[1];
+      cd(path);
       curMana -= 10;
   }
   else if(strcmp(command->cmd, "history") == 0){
@@ -263,24 +265,24 @@ void executeWait() {
 }
 
 
-void handle_sigint(int sig, siginfo_t *si, void *unused) {
-    printf("\nCtrl+C was pressed, but I'm not closing!\n");
-    fflush(stdout); // Make sure the message is immediately printed
-}
+// void handle_sigint(int sig, siginfo_t *si, void *unused) {
+//     printf("\nCtrl+C was pressed, but I'm not closing!\n");
+//     fflush(stdout); // Make sure the message is immediately printed
+// }
 
 
-void setup_sigint_handler() {
-    struct sigaction sa;
+// void setup_sigint_handler() {
+//     struct sigaction sa;
 
-    // Clear the sa structure
-    memset(&sa, 0, sizeof(sa));
+//     // Clear the sa structure
+//     memset(&sa, 0, sizeof(sa));
 
-    sa.sa_sigaction = handle_sigint;
-    sa.sa_flags = SA_SIGINFO;
+//     sa.sa_sigaction = handle_sigint;
+//     sa.sa_flags = SA_SIGINFO;
 
-    // Setup the signal handler for SIGINT
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(1); // Exit if we can't set the handler
-    }
-}
+//     // Setup the signal handler for SIGINT
+//     if (sigaction(SIGINT, &sa, NULL) == -1) {
+//         perror("sigaction");
+//         exit(1); // Exit if we can't set the handler
+//     }
+// }
