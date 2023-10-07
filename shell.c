@@ -46,7 +46,6 @@ void read_cmd();
 cmd* tokenize();
 int execute(cmd* command);
 int external_exec(cmd* command);
-void print_dragon();
 
 int main(){
   user = getlogin();
@@ -61,7 +60,6 @@ int main(){
     // }
     // printf("%s",cur_cmd->cmd);
     execute(cur_cmd);
-    print_dragon();
   }
   return 0;
 }
@@ -135,7 +133,12 @@ int execute(cmd* command) {
       curMana -= 5;
   }
   else if(strcmp(command->cmd, "quest") == 0){
-      curMana -= 5;
+      print_dragon();
+      int dragon_health = get_dragon_health();
+      printf("current dragon health: %d\n", dragon_health);
+      if (dragon_health == 0) {
+          printf("dragon defeated :)\n");
+      }
   }
   else{
     external_exec(command);
@@ -161,20 +164,4 @@ int external_exec(cmd* command){
       // We are in the parent process
       wait(NULL);  // Wait for the child to exit
   }
-}
-
-void print_dragon() {
-    printf("        ,     \\    /      ,        \n");
-    printf("       / \\    )\\__/(     / \\       \n");
-    printf("      /   \\  (_\\  /_)   /   \\      \n");
-    printf(" ____/_____\\__\\@  @/___/_____\\____ \n");
-    printf("|             |\\../|              |\n");
-    printf("|              \\VV/               |\n");
-    printf("|        ----------------         |\n");
-    printf("|_________________________________|\n");
-    printf(" |    /\\ /      \\\\       \\ /\\    | \n");
-    printf(" |  /   V        ))       V   \\  | \n");
-    printf(" |/     `       //        '     \\| \n");
-    printf(" `              V                '\n");
-    printf("\n(https://www.asciiart.eu/mythology/dragons)\n");
 }
