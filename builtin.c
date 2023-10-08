@@ -9,28 +9,36 @@
 
 AliasMap *aliases = NULL;
 
-int get_dragon_health() {
-    int total_health = 1;
-    FILE *ifp = fopen("quest/scale1", "r");
+int has_scale_been_fireballed(char *filename);
 
+int get_dragon_health() {
+    int dragon_initial_health = 3;
+    int damage_taken = 0;
+    damage_taken += has_scale_been_fireballed("Dragon/scale3");
+    damage_taken += has_scale_been_fireballed("Dragon/scale7");
+    damage_taken += has_scale_been_fireballed("Dragon/scale16");
+    return dragon_initial_health - damage_taken;
+}
+
+int has_scale_been_fireballed(char *filename) {
+    FILE *ifp = fopen(filename, "r");
     if (ifp == NULL) {
-        printf("dragon not found.");
+        printf("Dragon not found.");
         return -1;
     }
-
     char buffer[1024];
     while (fgets(buffer, 1024, ifp) != NULL) {
         // printf(">>%s<<\n", buffer);
-        if (strcmp(buffer, "fireball\n") == 0) {
-            total_health--;
+        if (strcmp(buffer, "fireball\n") == 0 || strcmp(buffer, "Fireball\n") == 0) {
+            return 1;
         }
     }
-
-    return total_health;
+    fclose(ifp);
+    return 0;
 }
 
-void print_dragon() {
-    // TODO make the dragon look different based on its current health
+void print_alive_dragon() {
+    printf("(https://www.asciiart.eu/mythology/dragons)\n");
     printf("        ,     \\    /      ,        \n");
     printf("       / \\    )\\__/(     / \\       \n");
     printf("      /   \\  (_\\  /_)   /   \\      \n");
@@ -43,8 +51,26 @@ void print_dragon() {
     printf(" |  /   V        ))       V   \\  | \n");
     printf(" |/     `       //        '     \\| \n");
     printf(" `              V                '\n");
-    printf("\n(https://www.asciiart.eu/mythology/dragons)\n\n");
-    printf("A dragon is attacking! Find its weak spots and cast fireballs at them\n");
+    printf("\n");
+    printf("A dragon is attacking! Find its " RED "weak" RESET " spots and sling " YELLOW "fireballs" RESET " into them!\n");
+}
+
+void print_dead_dragon() {
+    printf("(https://www.asciiart.eu/mythology/dragons)\n");
+    printf("        ,     \\    --      ,        \n");
+    printf("       / \\    )\\__/(     / \\       \n");
+    printf("      /   \\  (_\\  /_)   /   \\      \n");
+    printf(" ____/_____\\__\\X  X/___/_____\\____ \n");
+    printf("|             |\\../|              |\n");
+    printf("| --           \\VV/         /  \\  |\n");
+    printf("|   \\    ----------------  /      |\n");
+    printf("|_________________________________|\n");
+    printf(" \\    /\\ /      \\\\       \\ /\\    | \n");
+    printf(" /  /   V        ))       V   \\  | \n");
+    printf(" |/     `       //        '     \\| \n");
+    printf(" `              V                '\n");
+    printf("\n");
+    printf("🎊 Dragon defeated! 🥳\n");
 }
 
 void potion(int* curMana) {
@@ -108,15 +134,15 @@ int cd(char* path){
         const char *home_directory = getenv("HOME");
         //printf(getenv("HOME"));
 
-        if(home_directory == NULL) {
-            printf("Can't find Home.\n");
+        if (home_directory == NULL) {
+            printf(RED "Can't find Home.\n"RESET);
             return -1;
         }
-        else if(chdir(home_directory) != 0) {
-            printf("Failed to cast Home spell.\n");
+        else if (chdir(home_directory) != 0) {
+            printf(RED "Failed to cast Home spell.\n"RESET);
             return -1;
         }
-    printf("Back Home. 🏡\n");
+    printf(BLUE "Back Home. 🏡\n"RESET);
     }
 
     // go to directory
@@ -124,15 +150,43 @@ int cd(char* path){
         // const char *user_path = getenv(path);
         // printf("%s %s\n",user_path,path);
 
-        // if(user_path == NULL) {
-        //     printf("Can't find The Path.\n");
+        // if (user_path == NULL) {
+        //     printf(RED "Can't find The Path.\n");
         //     return -1;
         // }
-        if(chdir(path) != 0) {
-            printf("Failed to cast Teleport spell.\n");
+        if (chdir(path) != 0) {
+            printf(RED "Failed to cast Teleport spell.\n" RESET);
             return -1;
         }
-    printf("%s! 🧙‍♂️\n", path);
+    printf(GREEN "%s! 🧙‍♂️\n"RESET, path);
+    }
+    // success.
+    return 0;
+}
+
+// iykyk
+void echo() {
+    printf("🗣️💨💨💨\n");
+}
+
+int pwd() {
+    char *buffer;
+    size_t size;
+
+    // Find the size of the buffer for the current working directory.
+    size = pathconf(".", _PC_PATH_MAX);
+
+    if ((buffer = (char *)malloc((size_t)size)) != NULL) {
+        if (getcwd(buffer, (size_t)size) != NULL) {
+            printf(GREEN "Oracle spell used 🧭, You are at %s\n"RESET, buffer);
+        } else {
+            printf(RED "Failed to cast Oracle spell\n"RESET);
+            return -1;
+        }
+        free(buffer);
+    } else {
+        printf(DARK_GRAY "Uh, this is awkward.\n"RESET);
+        return -1;
     }
     // success.
     return 0;

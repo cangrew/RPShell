@@ -152,16 +152,21 @@ int execute(cmd* command) {
       help();
   }
   else if(strcmp(command->cmd, "cd") == 0){
+      curMana -= 10;
       char* path = command->args[1];
       cd(path);
-      curMana -= 10;
   }
   else if(strcmp(command->cmd, "history") == 0){
       curMana -= 20;
       history();
   }
   else if(strcmp(command->cmd, "echo") == 0){
-      curMana -= 5;
+      curMana -= 10;
+      echo(NULL);
+  }
+  else if(strcmp(command->cmd, "pwd") == 0){
+      curMana -= 10;
+      int pwd();
   }
   else if(strcmp(command->cmd, "alias") == 0){
       curMana -= 10;
@@ -172,11 +177,13 @@ int execute(cmd* command) {
       executeWait();
   }
   else if(strcmp(command->cmd, "quest") == 0){
-      print_dragon();
       int dragon_health = get_dragon_health();
-      printf("current dragon health: %d\n", dragon_health);
       if (dragon_health == 0) {
-          printf("dragon defeated :)\n");
+          print_dead_dragon();
+      }
+      else {
+          print_alive_dragon();
+          printf("  (Dragon health: %d)\n", dragon_health);
       }
   }
   else{
