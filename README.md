@@ -17,14 +17,30 @@ Welcome to the RPShell! Dive into a command-line experience where your terminal 
 - **Immersive Prompt:** Feel like a wizard with every command!
 - **Health and Mana bars**: Live the real posibility of game over.
 - **Interactive Quests:** Complete challenges and puzzles right from your terminal.
-- 
 
 ## Prerequisites 📜
 
-Ensure you have the following installed on your machine:
+RPShell was made for Linux & MacOS. 
+If you are on Windows you can use [WSL](https://learn.microsoft.com/en-us/windows/wsl/about) or a [Linux VM](https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox#1-overview) to play RPShell.
 
-- Git
-- ReadLine
+Ensure you have the following installed on your machine:
+- [Git](https://git-scm.com/)
+- [ReadLine](https://www.gnu.org/home.en.html)
+
+If not, all you need to do within your terminal is the following:
+```bash
+   # Install git
+   sudo apt install git
+   
+   # Check if git is installed
+   git --version
+   
+   # Install libreadline-dev
+   sudo apt install libreadline-dev
+   
+   # Check if libreadline-dev is installed
+   sudo apt list --installed | grep libreadline-dev
+```
 
 ## Installation 📥
 
