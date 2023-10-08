@@ -8,6 +8,7 @@ Welcome to the RPShell! Dive into a command-line experience where your terminal 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Commands and Arcane Rituals](#commands-and-arcane-rituals)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -65,9 +66,32 @@ To start your RPShell experience:
 
 Now you're in a mystical realm. Let your adventures begin!
 
-## Commands 🌟
 
-- 
+## Commands and Arcane Rituals 🧙
+
+**Teleport (cd) 🚪**
+   - Use this incantation to traverse through magical portals to different realms (directories).
+
+**Chronicle of Past Incantations (History) 📜**
+   - Recount tales (commands) of old. Relive your journey through this mystical realm.
+
+**pwd 🧭**
+   - Summon this spell to reveal your current location within the vast labyrinth of realms.
+
+**echo 🗣️**
+   - Channel your inner bard! Proclaim words and let them echo through the land.
+
+**potion 🧪**
+   - Drink a magical potion to regain Mana.
+
+**long_rest 🛌**
+   - Take camp, and take a much needed rest adventurer. It restores HP and Mana.
+
+**exit 🌀**
+   - Utter this spell when you wish to leave the mystical shell and return to the mundane world.
+     
+**help 📜**
+   - Summon the Great Enchanted Tome of Guidace.
 
 ## Contributing 🤝
 
@@ -85,7 +109,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact 💌
 
-- **Your Name** - yourname@example.com
+- **Andres Delgado** - andres.delgado@ucf.edu
 - **Project Link** - [https://github.com/cangrew/RPShell](https://github.com/cangrew/RPShell)
 
 
