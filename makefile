@@ -7,7 +7,7 @@ LDFLAGS = -lreadline -lncurses
 OBJS = shell.o builtin.o
 
 # Target rule
-a.out: $(OBJS)
+RPShell: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 # Individual object file rules
@@ -19,6 +19,6 @@ builtin.o: builtin.c builtin.h
 
 # Clean rule to remove object files and executable
 clean:
-	rm -f *.o a.out
+	rm -f *.o RPShell
 
 .PHONY: clean

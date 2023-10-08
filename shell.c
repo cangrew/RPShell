@@ -162,7 +162,7 @@ int execute(cmd* command) {
   }
   else if(strcmp(command->cmd, "echo") == 0){
       curMana -= 10;
-      echo(NULL);
+      echo(command->args,command->argc);
   }
   else if(strcmp(command->cmd, "pwd") == 0){
       curMana -= 10;
@@ -170,7 +170,7 @@ int execute(cmd* command) {
   }
   else if(strcmp(command->cmd, "alias") == 0){
       curMana -= 10;
-      alias(command->args[1]);
+      // alias(command->args[1]);
   }
   else if(strcmp(command->cmd, "wait") == 0){
       curMana -= 5;

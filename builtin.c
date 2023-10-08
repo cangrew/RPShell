@@ -7,7 +7,7 @@
 #include "resources.h"
 #include "builtin.h"
 
-AliasMap *aliases = NULL;
+// AliasMap *aliases = NULL;
 
 int has_scale_been_fireballed(char *filename);
 
@@ -115,6 +115,12 @@ void help() {
     printf(YELLOW "echo 🗣️\n" RESET);
     printf(CYAN "   - Channel your inner bard! Proclaim words and let them echo through the land.\n\n");
 
+    printf(YELLOW "potion 🧪\n" RESET);
+    printf(CYAN "   - Drink a magical potion to regain Mana.\n\n");
+
+    printf(YELLOW "long_rest 🧪\n" RESET);
+    printf(CYAN "   - Take camp, and take a much needed rest adventurer. it restores HP and Mana.\n\n");
+
     printf(YELLOW "exit 🌀\n" RESET);
     printf(CYAN "   - Utter this spell when you wish to leave the mystical shell and return to the mundane world.\n\n");
 
@@ -165,8 +171,12 @@ int cd(char* path){
 }
 
 // iykyk
-void echo() {
+void echo(char** args, int argc) {
     printf("🗣️💨💨💨\n");
+    for(int i = 1; i < argc; i++){
+        printf("%s ",args[i]);
+    }
+    printf("\n");
 }
 
 int pwd() {
@@ -192,52 +202,52 @@ int pwd() {
     return 0;
 }
 
-void alias(char* arg) {
-    char* before, *after;
-    char *loc = strchr(arg, '=');
-    if (loc) {
-        size_t lengthBefore = loc - arg;
-        before = strndup(arg,lengthBefore);
-        before[lengthBefore] = '\0';
+// void alias(char* arg) {
+//     char* before, *after;
+//     char *loc = strchr(arg, '=');
+//     if (loc) {
+//         size_t lengthBefore = loc - arg;
+//         before = strndup(arg,lengthBefore);
+//         before[lengthBefore] = '\0';
 
-        after = strdup(loc + 1);
-    } else {
-        before = strdup(arg);
-        after = NULL;
-    }
-    add_alias(before,after);
-}
+//         after = strdup(loc + 1);
+//     } else {
+//         before = strdup(arg);
+//         after = NULL;
+//     }
+//     add_alias(before,after);
+// }
 
-void add_alias(char *alias, char *command) {
-    AliasMap *s;
+// void add_alias(char *alias, char *command) {
+//     AliasMap *s;
 
-    HASH_FIND_STR(aliases, alias, s);  // Check if alias already exists
-    if (s == NULL) {
-        s = (AliasMap *)malloc(sizeof(AliasMap));
-        s->alias = strdup(alias);
-        HASH_ADD_KEYPTR(hh, aliases, s->alias, strlen(s->alias), s);
-    }
-    s->command = strdup(command);  // If alias already existed, update the command
-}
+//     HASH_FIND_STR(aliases, alias, s);  // Check if alias already exists
+//     if (s == NULL) {
+//         s = (AliasMap *)malloc(sizeof(AliasMap));
+//         s->alias = strdup(alias);
+//         HASH_ADD_KEYPTR(hh, aliases, s->alias, strlen(s->alias), s);
+//     }
+//     s->command = strdup(command);  // If alias already existed, update the command
+// }
 
-char *find_alias(char *alias) {
-    AliasMap *s;
+// char *find_alias(char *alias) {
+//     AliasMap *s;
 
-    HASH_FIND_STR(aliases, alias, s);
-    if (s) {
-        return s->command;
-    }
-    return NULL;
-}
+//     HASH_FIND_STR(aliases, alias, s);
+//     if (s) {
+//         return s->command;
+//     }
+//     return NULL;
+// }
 
-void delete_alias(char *alias) {
-    AliasMap *s;
+// void delete_alias(char *alias) {
+//     AliasMap *s;
 
-    HASH_FIND_STR(aliases, alias, s);
-    if (s) {
-        HASH_DEL(aliases, s);
-        free(s->alias);
-        free(s->command);
-        free(s);
-    }
-}
+//     HASH_FIND_STR(aliases, alias, s);
+//     if (s) {
+//         HASH_DEL(aliases, s);
+//         free(s->alias);
+//         free(s->command);
+//         free(s);
+//     }
+// }
