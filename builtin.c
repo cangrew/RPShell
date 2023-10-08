@@ -133,3 +133,7 @@ int cd(char* path){
     // success.
     return 0;
 }
+
+void echo() {
+    printf("🗣️💨💨💨");
+}

@@ -143,16 +143,17 @@ int execute(cmd* command) {
       help();
   }
   else if(strcmp(command->cmd, "cd") == 0){
+      curMana -= 10;
       char* path = command->args[1];
       cd(path);
-      curMana -= 10;
   }
   else if(strcmp(command->cmd, "history") == 0){
       curMana -= 20;
       history();
   }
   else if(strcmp(command->cmd, "echo") == 0){
-      curMana -= 5;
+      curMana -= 10;
+      echo();
   }
   else if(strcmp(command->cmd, "wait") == 0){
       curMana -= 5;
