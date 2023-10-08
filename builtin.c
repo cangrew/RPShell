@@ -5,6 +5,9 @@
 #include <unistd.h>
 
 #include "resources.h"
+#include "builtin.h"
+
+AliasMap *aliases = NULL;
 
 int get_dragon_health() {
     int total_health = 1;
@@ -118,13 +121,14 @@ int cd(char* path){
 
     // go to directory
     if (!(path == NULL)) {
-        const char *user_path = getenv(path);
+        // const char *user_path = getenv(path);
+        // printf("%s %s\n",user_path,path);
 
-        if(user_path == NULL) {
-            printf("Can't find The Path.\n");
-            return -1;
-        }
-        else if(chdir(user_path) != 0) {
+        // if(user_path == NULL) {
+        //     printf("Can't find The Path.\n");
+        //     return -1;
+        // }
+        if(chdir(path) != 0) {
             printf("Failed to cast Teleport spell.\n");
             return -1;
         }
@@ -132,4 +136,54 @@ int cd(char* path){
     }
     // success.
     return 0;
+}
+
+void alias(char* arg) {
+    char* before, *after;
+    char *loc = strchr(arg, '=');
+    if (loc) {
+        size_t lengthBefore = loc - arg;
+        before = strndup(arg,lengthBefore);
+        before[lengthBefore] = '\0';
+
+        after = strdup(loc + 1);
+    } else {
+        before = strdup(arg);
+        after = NULL;
+    }
+    add_alias(before,after);
+}
+
+void add_alias(char *alias, char *command) {
+    AliasMap *s;
+
+    HASH_FIND_STR(aliases, alias, s);  // Check if alias already exists
+    if (s == NULL) {
+        s = (AliasMap *)malloc(sizeof(AliasMap));
+        s->alias = strdup(alias);
+        HASH_ADD_KEYPTR(hh, aliases, s->alias, strlen(s->alias), s);
+    }
+    s->command = strdup(command);  // If alias already existed, update the command
+}
+
+char *find_alias(char *alias) {
+    AliasMap *s;
+
+    HASH_FIND_STR(aliases, alias, s);
+    if (s) {
+        return s->command;
+    }
+    return NULL;
+}
+
+void delete_alias(char *alias) {
+    AliasMap *s;
+
+    HASH_FIND_STR(aliases, alias, s);
+    if (s) {
+        HASH_DEL(aliases, s);
+        free(s->alias);
+        free(s->command);
+        free(s);
+    }
 }

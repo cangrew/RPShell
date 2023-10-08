@@ -47,6 +47,7 @@ int external_exec(cmd* command);
 void executeWait();
 void handle_sigint(int sig, siginfo_t *si, void *unused);
 void setup_sigint_handler();
+int check_status();
 
 char* colorize(char* str, const char* color_code);
 void print_error(char* cmd);
@@ -62,12 +63,12 @@ void print_cmd(const cmd *command) {
 int main(){
   user = getlogin();
   gethostname(hostname, 1024);
-  cwd = getcwd(NULL, 0);
   read_history("resources/history");
   setup_sigint_handler();
 
 
   while(1) {
+    cwd = getcwd(NULL, 0);
     read_cmd();
     add_history(buffer);
     cmd* cur_cmd = tokenize();
@@ -77,6 +78,9 @@ int main(){
     // printf("%s",cur_cmd->cmd);
     execute(cur_cmd);
     write_history("resources/history");
+    if(check_status()){
+      break;
+    }
   }
   return 0;
 }
@@ -132,6 +136,11 @@ int execute(cmd* command) {
   if(strcmp(command->cmd, "potion") == 0){
       potion(&curMana);
   }
+  else if(strcmp(command->cmd, "long_rest") == 0){
+      curMana = 100;
+      curHP = 100;
+      //potion(&curMana);
+  }
   else if (curMana <= 0) {
       printf("You don't have enough mana.\n");
       return 0;
@@ -153,6 +162,10 @@ int execute(cmd* command) {
   }
   else if(strcmp(command->cmd, "echo") == 0){
       curMana -= 5;
+  }
+  else if(strcmp(command->cmd, "alias") == 0){
+      curMana -= 10;
+      alias(command->args[1]);
   }
   else if(strcmp(command->cmd, "wait") == 0){
       curMana -= 5;
@@ -275,11 +288,10 @@ void executeWait() {
 
 void handle_sigint(int sig __attribute__((unused)), siginfo_t *si __attribute__((unused)), void *unused __attribute__((unused))) {
   //printf("\n🔮 "YELLOW"Ctrl+C?"RED" Oops! You just turned your coffee into a squirrel."RESET" Next time, just say "YELLOW"exit!"RESET" 🐿️☕\n");
-  printf(DARK_PURPLE "🌌 Ah, "PURPLE"Ctrl+C"DARK_PURPLE"! A mere mortal's plea to the abyss. But the void is vast and indifferent. Whisper "YELLOW"exit"DARK_PURPLE" to find your way back to reality, lest you remain trapped in this liminal space forever... 🌑\n"RESET);
+  printf(DARK_PURPLE "\n🌌 Ah, "PURPLE"Ctrl+C"DARK_PURPLE"! A mere mortal's plea to the abyss. But the void is vast and indifferent. Whisper "YELLOW"exit"DARK_PURPLE" to find your way back to reality, lest you remain trapped in this liminal space forever... 🌑\n"RESET);
   fflush(stdout); // Make sure the message is immediately printed
   rl_forced_update_display();
 }
-
 
 void setup_sigint_handler() {
   struct sigaction sa;
@@ -294,4 +306,17 @@ void setup_sigint_handler() {
     perror("sigaction");
     exit(EXIT_FAILURE); // Exit if we can't set the handler
   }
+}
+
+int check_status(){
+  if(curHP <= 0) {
+    printf(PURPLE "🔮💫 *BLIP!* 💫🔮\n" RESET);
+    printf("Uh-oh, you've run out of mystical shell HP! Seems like that last command was a dragon-level challenge, eh? 😅\n\n");
+    printf(RED "🐉🔥 \"Mwahahaha! Thought you could out-code the mighty DrakoTerminalus? Guess again, mere mortal coder!\"\n\n" RESET);
+    printf(GREEN "Quick, reach into your pocket! Do you have a potion? No? A mana cookie? An enchanted USB stick? Anything?! 🍪✨\n\n" RESET);
+    printf(YELLOW "🌌 Remember:"RESET" In the world of Terminalia, when life gives you a " YELLOW "`Segmentation Fault`" RESET ", make a " YELLOW "`Magic Potion`" RESET ". But for now... perhaps just restarting the shell will do. 😉\n" RESET);
+    printf("See ya on the other side of the respawn, brave coder! And next time, bring a " CYAN "+5 enchanted keyboard." RESET " 🪄⌨️\n\n");
+    return 1;
+  }
+  return 0;
 }
