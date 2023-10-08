@@ -166,7 +166,7 @@ int execute(cmd* command) {
   }
   else if(strcmp(command->cmd, "pwd") == 0){
       curMana -= 10;
-      int pwd();
+      pwd();
   }
   else if(strcmp(command->cmd, "alias") == 0){
       curMana -= 10;

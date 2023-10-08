@@ -4,9 +4,10 @@
 #include <uthash.h>
 
 int cd(char* path);
-int echo(char* args);
+void echo();
 void history();
 void help();
+int pwd();
 void alias(char* arg);
 void potion(int* curMana);
 int get_dragon_health(void);

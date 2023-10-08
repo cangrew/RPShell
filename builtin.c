@@ -74,7 +74,7 @@ void print_dead_dragon() {
 }
 
 void potion(int* curMana) {
-    printf("Drinking potion...\n");
+    printf(BLUE"Drinking a Mana potion...🧪\n"RESET);
     if (*curMana + 20 > 100) {
         *curMana = 100;
     }
