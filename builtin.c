@@ -131,35 +131,59 @@ int cd(char* path){
         const char *home_directory = getenv("HOME");
         //printf(getenv("HOME"));
 
-        if(home_directory == NULL) {
-            printf("Can't find Home.\n");
+        if (home_directory == NULL) {
+            printf(RED "Can't find Home.\n");
             return -1;
         }
-        else if(chdir(home_directory) != 0) {
-            printf("Failed to cast Home spell.\n");
+        else if (chdir(home_directory) != 0) {
+            printf(RED "Failed to cast Home spell.\n");
             return -1;
         }
-    printf("Back Home. 🏡\n");
+    printf(BLUE "Back Home. 🏡\n");
     }
 
     // go to directory
     if (!(path == NULL)) {
         const char *user_path = getenv(path);
 
-        if(user_path == NULL) {
-            printf("Can't find The Path.\n");
+        if (user_path == NULL) {
+            printf(RED "Can't find The Path.\n");
             return -1;
         }
-        else if(chdir(user_path) != 0) {
-            printf("Failed to cast Teleport spell.\n");
+        else if (chdir(user_path) != 0) {
+            printf(RED "Failed to cast Teleport spell.\n");
             return -1;
         }
-    printf("%s! 🧙‍♂️\n", path);
+    printf(GREEN "%s! 🧙‍♂️\n", path);
     }
     // success.
     return 0;
 }
 
-void echo(char *args) {
-    printf("🗣️💨💨💨");
+// iykyk
+void echo() {
+    printf("🗣️💨💨💨\n");
+}
+
+int pwd() {
+    char *buffer;
+    size_t size;
+
+    // Find the size of the buffer for the current working directory.
+    size = pathconf(".", _PC_PATH_MAX);
+
+    if ((buffer = (char *)malloc((size_t)size)) != NULL) {
+        if (getcwd(buffer, (size_t)size) != NULL) {
+            printf(GREEN "Oracle spell used 🧭, You are at %s\n", buffer);
+        } else {
+            printf(RED "Failed to cast Oracle spell\n");
+            return -1;
+        }
+        free(buffer);
+    } else {
+        printf(DARK_GRAY "Uh, this is awkward.\n");
+        return -1;
+    }
+    // success.
+    return 0;
 }

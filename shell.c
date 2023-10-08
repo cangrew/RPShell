@@ -155,6 +155,10 @@ int execute(cmd* command) {
       curMana -= 10;
       echo(NULL);
   }
+  else if(strcmp(command->cmd, "pwd") == 0){
+      curMana -= 10;
+      int pwd();
+  }
   else if(strcmp(command->cmd, "wait") == 0){
       curMana -= 5;
       executeWait();
