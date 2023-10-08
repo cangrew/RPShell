@@ -7,12 +7,12 @@ int cd(char* path);
 void echo();
 void history();
 void help();
-int pwd();
 void alias(char* arg);
 void potion(int* curMana);
 int get_dragon_health(void);
 void print_alive_dragon(void);
 void print_dead_dragon(void);
+int pwd(void);
 
 void add_alias(char *alias, char *command);
 char *find_alias(char *alias);
