@@ -114,7 +114,22 @@ int cd(char* path){
             return -1;
         }
     printf("Back Home. 🏡\n");
-    return 0;
     }
 
+    // go to directory
+    if (!(path == NULL)) {
+        const char *user_path = getenv(path);
+
+        if(user_path == NULL) {
+            printf("Can't find The Path.\n");
+            return -1;
+        }
+        else if(chdir(user_path) != 0) {
+            printf("Failed to cast Teleport spell.\n");
+            return -1;
+        }
+    printf("%s! 🧙‍♂️\n", path);
+    }
+    // success.
+    return 0;
 }
