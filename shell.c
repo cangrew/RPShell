@@ -153,18 +153,20 @@ int execute(cmd* command) {
   }
   else if(strcmp(command->cmd, "echo") == 0){
       curMana -= 10;
-      echo();
+      echo(NULL);
   }
   else if(strcmp(command->cmd, "wait") == 0){
       curMana -= 5;
       executeWait();
   }
   else if(strcmp(command->cmd, "quest") == 0){
-      print_dragon();
       int dragon_health = get_dragon_health();
-      printf("current dragon health: %d\n", dragon_health);
       if (dragon_health == 0) {
-          printf("dragon defeated :)\n");
+          print_dead_dragon();
+      }
+      else {
+          print_alive_dragon();
+          printf("  (Dragon health: %d)\n", dragon_health);
       }
   }
   else{

@@ -6,28 +6,36 @@
 
 #include "resources.h"
 
-int get_dragon_health() {
-    int total_health = 1;
-    FILE *ifp = fopen("quest/scale1", "r");
+int has_scale_been_fireballed(char *filename);
 
+int get_dragon_health() {
+    int dragon_initial_health = 3;
+    int damage_taken = 0;
+    damage_taken += has_scale_been_fireballed("Dragon/scale3");
+    damage_taken += has_scale_been_fireballed("Dragon/scale7");
+    damage_taken += has_scale_been_fireballed("Dragon/scale16");
+    return dragon_initial_health - damage_taken;
+}
+
+int has_scale_been_fireballed(char *filename) {
+    FILE *ifp = fopen(filename, "r");
     if (ifp == NULL) {
-        printf("dragon not found.");
+        printf("Dragon not found.");
         return -1;
     }
-
     char buffer[1024];
     while (fgets(buffer, 1024, ifp) != NULL) {
         // printf(">>%s<<\n", buffer);
-        if (strcmp(buffer, "fireball\n") == 0) {
-            total_health--;
+        if (strcmp(buffer, "fireball\n") == 0 || strcmp(buffer, "Fireball\n") == 0) {
+            return 1;
         }
     }
-
-    return total_health;
+    fclose(ifp);
+    return 0;
 }
 
-void print_dragon() {
-    // TODO make the dragon look different based on its current health
+void print_alive_dragon() {
+    printf("(https://www.asciiart.eu/mythology/dragons)\n");
     printf("        ,     \\    /      ,        \n");
     printf("       / \\    )\\__/(     / \\       \n");
     printf("      /   \\  (_\\  /_)   /   \\      \n");
@@ -40,8 +48,26 @@ void print_dragon() {
     printf(" |  /   V        ))       V   \\  | \n");
     printf(" |/     `       //        '     \\| \n");
     printf(" `              V                '\n");
-    printf("\n(https://www.asciiart.eu/mythology/dragons)\n\n");
-    printf("A dragon is attacking! Find its weak spots and cast fireballs at them\n");
+    printf("\n");
+    printf("A dragon is attacking! Find its " RED "weak" RESET " spots and sling " YELLOW "fireballs" RESET " into them!\n");
+}
+
+void print_dead_dragon() {
+    printf("(https://www.asciiart.eu/mythology/dragons)\n");
+    printf("        ,     \\    --      ,        \n");
+    printf("       / \\    )\\__/(     / \\       \n");
+    printf("      /   \\  (_\\  /_)   /   \\      \n");
+    printf(" ____/_____\\__\\X  X/___/_____\\____ \n");
+    printf("|             |\\../|              |\n");
+    printf("| --           \\VV/         /  \\  |\n");
+    printf("|   \\    ----------------  /      |\n");
+    printf("|_________________________________|\n");
+    printf(" \\    /\\ /      \\\\       \\ /\\    | \n");
+    printf(" /  /   V        ))       V   \\  | \n");
+    printf(" |/     `       //        '     \\| \n");
+    printf(" `              V                '\n");
+    printf("\n");
+    printf("🎊 Dragon defeated! 🥳\n");
 }
 
 void potion(int* curMana) {
@@ -134,6 +160,6 @@ int cd(char* path){
     return 0;
 }
 
-void echo() {
+void echo(char *args) {
     printf("🗣️💨💨💨");
 }

@@ -7,6 +7,7 @@ void history();
 void help();
 void potion(int* curMana);
 int get_dragon_health(void);
-void print_dragon(void);
+void print_alive_dragon(void);
+void print_dead_dragon(void);
 
 #endif // BUILTIN_H
