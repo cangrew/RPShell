@@ -1,4 +1,4 @@
 *.out
 *.o
-resources/history
+/resources/history
 /.vscode
